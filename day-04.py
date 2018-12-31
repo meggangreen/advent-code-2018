@@ -45,8 +45,7 @@ class Guard(object):
 
     def get_most_slept_minute(self):
         if self.total_sleep <= 0:
-            print ("Total sleep is zero")
-            return None
+            return (-1, -1)
         else:
             return sorted(self.minutes.items(), key = lambda kv: kv[1])[-1]
 
@@ -91,3 +90,11 @@ def make_all_guards():
         guard.calc_sleep()
 
     return guards
+
+
+def get_sleepiest_minute():
+    guards = make_all_guards()
+    for idn, guard in guards.items():
+        guards[idn] = guard.get_most_slept_minute()
+
+    return sorted(guards.items(), key = lambda kv: kv[1][1])[-1]
