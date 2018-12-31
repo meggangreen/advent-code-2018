@@ -11,6 +11,7 @@ class Guard(object):
         self.idn = idn
         self.history = []
         self.total_sleep = 0
+        self.minutes = {}
 
 
     def get_history(self):
@@ -23,8 +24,9 @@ class Guard(object):
                 self.history.append(entry)
 
 
-    def calc_total_sleep(self):
+    def calc_sleep(self):
         total = 0
+        minutes = {}
         for i in range(len(self.history)):
             if sleeps_re.search(self.history[i]):
                 start = int(self.history[i][15:17])
@@ -33,19 +35,28 @@ class Guard(object):
                 else:
                     end = 60
                 total += end - start
+                minutes = input_minutes(minutes, start, end)
             else:
                 start, end = None, None
         self.total_sleep = total
-        return self.total_sleep
+        self.minutes = minutes
+        return self.total_sleep, self.minutes
 
 
     def get_most_slept_minute(self):
-        if not self.history or total_sleep <= 0:
-            print ("Unable to calculate:", "history: {}", "sleep: {}".
-                   format(self.history, self.total_sleep), '\n')
+        if self.total_sleep <= 0:
+            print ("Total sleep is zero")
             return None
+        else:
+            return sorted(self.minutes.items(), key = lambda kv: kv[1])[-1]
 
-        # code
+
+    def input_minutes(self, minutes={}, start=0, end=60):
+        for m in range(start, end):
+            minutes[m] = minutes.get(m, 0) + 1
+
+        return minutes
+
 
 def get_schedule():
     with open('day-04.txt') as file:
@@ -54,8 +65,23 @@ def get_schedule():
     return schedule
 
 def get_sleepiest_guard():
-    pass
+    idns = get_guard_idns()
+    sleepy = Guard(-1)
+    for n in idns:
+        guard = Guard(n)
+        guard.get_history()
+        guard.calc_sleep()
+        if guard.total_sleep > sleepy.total_sleep:
+            sleepy = guard
+
+    return sleepy
 
 
-def get_most_slept_minute(guard):
-    pass
+def get_guard_idns():
+    schedule = get_schedule()
+    guards = []
+    for entry in schedule:
+        if guard_re.search(entry):
+            guards.append(int(guard_re.search(entry).groups()[0]))
+
+    return guards
