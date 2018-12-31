@@ -1,8 +1,11 @@
 """ Part One """
 from string import ascii_uppercase
 
-
 def get_polymer():
+    """
+        Opens a file; returns a polymer string
+    """
+
     with open('day-05.txt') as file:
         polymer = file.read().strip()
 
@@ -10,6 +13,10 @@ def get_polymer():
 
 
 def catalyze_reaction(polymer):
+    """
+        Takes in a polymer string; returns a reaction list
+    """
+
     reaction = list(polymer)
 
     i = 0
@@ -34,12 +41,20 @@ def catalyze_reaction(polymer):
 
 
 def collapse_product(reaction):
+    """
+        Takes in a reaction list; returns a product string
+    """
+
     product = ''.join([unit for unit in reaction if unit != 0])
     return product
 
 
 """ Part Two """
 def preen_polymer(polymer, unit):
+    """
+        Takes in a polymer string and a unit string; returns a polymer string
+    """
+
     preened_polymer = list(polymer)
     # unit = unit.upper()
 
@@ -51,6 +66,11 @@ def preen_polymer(polymer, unit):
 
 
 def make_all_preened_and_reacted_products(polymer):
+    """
+        Takes in a polymer string; returns a dictionary of possible products
+        after preening one unit from the list of 26 units
+    """
+
     products = {}
 
     for char in list(ascii_uppercase):
@@ -63,4 +83,9 @@ def make_all_preened_and_reacted_products(polymer):
 
 
 def get_shortest_product(polymer):
+    """
+        Takes in a polymer string; returns the length integer of the shortest
+        possible product
+    """
+
     return sorted(make_all_preened_and_reacted_products(polymer).keys())[0]
