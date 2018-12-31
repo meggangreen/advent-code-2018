@@ -1,4 +1,4 @@
-"""Part One"""
+"""Parts One and Two"""
 import re
 
 timestamp_re = re.compile(r"\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2})\]")
