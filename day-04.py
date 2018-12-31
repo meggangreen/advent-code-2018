@@ -35,7 +35,7 @@ class Guard(object):
                 else:
                     end = 60
                 total += end - start
-                minutes = input_minutes(minutes, start, end)
+                minutes = self.input_minutes(minutes, start, end)
             else:
                 start, end = None, None
         self.total_sleep = total
@@ -64,24 +64,30 @@ def get_schedule():
 
     return schedule
 
+
 def get_sleepiest_guard():
-    idns = get_guard_idns()
+    guards = make_all_guards()
     sleepy = Guard(-1)
-    for n in idns:
-        guard = Guard(n)
-        guard.get_history()
-        guard.calc_sleep()
+    for _, guard in guards.items():
         if guard.total_sleep > sleepy.total_sleep:
             sleepy = guard
 
     return sleepy
 
 
-def get_guard_idns():
+def make_all_guards():
     schedule = get_schedule()
-    guards = []
+
+    guards = {}
+    # knowing first entry is 'guard' and last is 'wakes'
     for entry in schedule:
         if guard_re.search(entry):
-            guards.append(int(guard_re.search(entry).groups()[0]))
+            idn = int(guard_re.search(entry).groups()[0])
+            if not guards.get(idn):
+                guards[idn] = Guard(idn)
+        guards[idn].history.append(entry)
+
+    for _, guard in guards.items():
+        guard.calc_sleep()
 
     return guards
