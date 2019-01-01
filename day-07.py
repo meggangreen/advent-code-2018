@@ -61,7 +61,7 @@ def update_available(nodes, complete):
     return [node.data for node in nodes if is_node_ready(node) is True]
 
 
-def complete_all_nodes():
+def set_up_flow():
     all_nodes = construct_nodes(get_edges())
 
     complete = []
@@ -69,6 +69,12 @@ def complete_all_nodes():
 
     available.extend(update_available(all_nodes.values(), complete))
     available = deque(sorted(available))
+
+    return all_nodes, complete, available
+
+
+def complete_all_nodes():
+    all_nodes, complete, available = set_up_flow()
 
     while available:
         node = all_nodes[available.popleft()]
@@ -78,3 +84,33 @@ def complete_all_nodes():
 
     return ''.join(complete)  # Order of completion
 
+""" Part Two """
+class Elf(object):
+    def __init__(self, name='Bob'):
+        self.name = name
+        self.proj = None
+        self.start = None
+        self.end = None
+
+
+def complete_with_help():
+    all_nodes, complete, available = set_up_flow()
+    workers = [Elf(i) for i in range(5)]
+
+    sec = -1
+
+    while len(complete) < 26:
+        sec += 1
+        for elf in workers:
+            if sec == elf.end:
+                complete.append(elf.proj.data)
+                available.extend(update_available(elf.proj.children, complete))
+                available = deque(sorted(available))
+                elf.proj, elf.start, elf.end = None, None, None
+            if available and elf.proj is None:
+                elf.proj = all_nodes[available.popleft()]
+                elf.start = sec
+                elf.end = sec + (ord(elf.proj.data) - 4)
+
+    # idk why it's one second off, but there you are.
+    return sec-1, ''.join(complete)
