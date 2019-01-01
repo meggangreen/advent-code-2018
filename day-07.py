@@ -5,40 +5,76 @@
 # find root -- no parent
 # traverse
 
-from collections import OrderedDict, deque  #defaultdict
-# import json
+from collections import deque
 import re
 
-def construct_trees_by_TingYu(edges):
-    """ https://gist.github.com/aethanyc/8313640 """
-    """Given a list of edges [parent, child], return trees. """
-    # trees = defaultdict(dict)
+class Node(object):
+    def __init__(self, data):
+        self.data = data
+        self.parents = set()
+        self.children = set()
 
-    for parent, child in edges:
-        if not trees.get(child):
-            trees[child] = {'Parents': set(), 'Children': set()}
-        trees[child]['Parents'].add(parent)
-        if not trees.get(parent):
-            trees[parent] = {'Parents': set(), 'Children': set()}
-        trees[parent]['Children'].add(child)
-        # trees[parent][child] = trees[child]
 
-    # Find roots
-    parents, children = zip(*edges)
-    roots = set(parents).difference(children)
-    leaves = set(children).difference(parents)
+    def add_child(self, child):
+        self.children.add(child)
 
-    print(roots, leaves)
 
-    return roots, trees
+    def add_parent(self, parent):
+        self.parents.add(parent)
 
-    # return {root: trees[root] for root in roots}
+
+    def is_root(self):
+        return len(self.parents) == 0
+
 
 def get_edges():
     pattern = re.compile(r"Step (\w) must be finished before step (\w)")
-    # Step A must be finished before step I can begin.
 
     with open('day-07.txt') as file:
         edges = [pattern.match(edge).groups() for edge in file.readlines()]
 
     return edges
+
+
+def construct_nodes(edges):
+    """ based on 'construct_trees_by_TingYu' at """
+    """ https://gist.github.com/aethanyc/8313640 """
+    """ Given a list of edges [parent, child], return nodes """
+
+    nodes = {n: Node(n) for n in set(sum(edges, ()))}
+
+    for parent, child in edges:
+        nodes[parent].add_child(nodes[child])
+        nodes[child].add_parent(nodes[parent])
+
+    return nodes
+
+
+def update_available(nodes, complete):
+    def is_node_ready(node):
+        for parent in node.parents:
+            if parent.data not in complete:
+                return False
+
+        return True
+
+    return [node.data for node in nodes if is_node_ready(node) is True]
+
+
+def complete_all_nodes():
+    all_nodes = construct_nodes(get_edges())
+
+    complete = []
+    available = deque()
+
+    available.extend(update_available(all_nodes.values(), complete))
+    available = deque(sorted(available))
+
+    while available:
+        node = all_nodes[available.popleft()]
+        complete.append(node.data)
+        available.extend(update_available(node.children, complete))
+        available = deque(sorted(available))
+
+    return ''.join(complete)  # Order of completion
+
