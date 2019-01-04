@@ -51,7 +51,6 @@ class Game(object):
                 # reset c_index and max_index
                 self.c_index = p_index
             else:
-                # import pdb; pdb.set_trace()
                 self.c_index = self.rotate_circle(2)
                 self.circle.insert(self.c_index, self.c_marble)
 
@@ -86,4 +85,28 @@ class Game(object):
         if self.players.get(player) is None:
             self.players[player] = 0
         self.players[player] += points
-        # print "{} scored {} points!".format(player, points)
+
+
+""" Part Two """
+# copied again from the interwebs
+# I assumed that rotating a deck would be O(n), which would give it the same
+# runtime as my P1 solution (I think lol), but it's obviously faster.
+# I like my score-keeping better, but max is obviously better than sorted =)
+
+# From reddit marcusandrews
+from collections import deque
+
+def play_game(num_players, valuablest_marble):
+    scores = players = {i: 0 for i in range(1, num_players+1)}
+    circle = deque([0])
+
+    for marble in range(1, valuablest_marble + 1):
+        if marble % 23 == 0:
+            circle.rotate(7)
+            scores[marble % num_players + 1] += marble + circle.pop()
+            circle.rotate(-1)
+        else:
+            circle.rotate(-1)
+            circle.append(marble)
+
+    return max(scores.values()) if scores else 0
