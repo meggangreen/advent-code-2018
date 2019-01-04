@@ -27,13 +27,13 @@ class Game(object):
 
     def end(self):
         winners = sorted(self.players.items(), key=lambda kv: kv[1], reverse=True)
-        print "GAME OVER"
-        print winners[0]
+        print("GAME OVER")
+        print(winners[0])
 
 
     def play(self):
         if not self.marbles:
-            print "I've lost my marbles ..."
+            print("I've lost my marbles ...")
             return
 
         while self.marbles:
