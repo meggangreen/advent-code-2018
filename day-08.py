@@ -24,6 +24,7 @@ class Tree(object):
         """ root as node """
         self.root = root
 
+
     def get_meta_sum(self):
         meta_sum = 0
         relations = [self.root]
@@ -46,6 +47,7 @@ def get_input_dq():
 def construct_tree(input_dq):
     return Tree(construct_node(input_dq))
 
+
 def construct_node(input_dq):
     if len(input_dq) < 2:
         return None
@@ -66,3 +68,15 @@ def construct_node(input_dq):
 
     return node
 
+
+""" Part Two """
+def get_node_value(node):
+    value = 0
+    if not node.children:
+        value += sum(node.metadata)
+    else:
+        for m in node.metadata:
+            if 0 < m <= len(node.children):
+                value += get_node_value(node.children[m-1])
+
+    return value
