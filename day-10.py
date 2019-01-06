@@ -1,4 +1,6 @@
 """ Part One """
+# copied and modified from reddit sophiebits
+
 import re
 
 def process_input():
