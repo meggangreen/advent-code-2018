@@ -39,7 +39,6 @@ class Registers:
             opcode = opcodes[n]
 
         self.data[c] = eval(opcode.operation)
-        # return regs
 
 
 def get_instructions():
@@ -63,7 +62,6 @@ def get_instructions():
 
 
 def make_opcodes():
-    'regs[a] + b'
     opcodes = {}
     opcodes['addr'] = Opcode('addr', 'regs[a] + regs[b]')
     opcodes['addi'] = Opcode('addi', 'regs[a] + b')
@@ -85,36 +83,58 @@ def make_opcodes():
     return opcodes
 
 
-def map_opcodes():
-    mapping = {}
-    for sample in samples:
-        orig_regs = deepcopy(sample.before.data)
-        if sample.data[0] not in mapping.keys():
-            mapping[sample.data[0]] = set()
-        for o in opcodes:
-            sample.before.data = [d for d in orig_regs]
-            sample.before.operate(sample, opcodes[o])
-            if sample.before.data == sample.after.data:
-                mapping[sample.data[0]].add(o)
+def process_samples():
+    """ Part One """
 
+    more_than_3 = 0
+
+    while samples:
+        sample = samples.pop()
+        if test_opcodes(sample) >=3:
+            more_than_3 += 1
+
+    return more_than_3
+
+
+def test_opcodes(sample):
+    if sample.data[0] not in mapping.keys():
+        mapping[sample.data[0]] = set()
+
+    orig_regs = deepcopy(sample.before.data)
+
+    opcode_matches = 0
+    for o in opcodes:
+        sample.before.data = [d for d in orig_regs]
+        sample.before.operate(sample, opcodes[o])
+        if sample.before.data == sample.after.data:
+            opcode_matches += 1
+            mapping[sample.data[0]].add(o)
+
+    return opcode_matches
+
+
+def map_opcodes():
     # and if there is no number with only one opcode? idk
     used = set()
     while mapping:
-        n, titles = sorted(mapping.items(), key = lambda kv: len(kv[1]))[0]
+        num, titles = sorted(mapping.items(), key = lambda kv: len(kv[1]))[0]
         if len(titles) == 1:
             active = titles.pop()
-            used.update([active, n])
-            opcodes[active].num = n
-            opcodes[n] = opcodes[active]
-            del mapping[n]
+            used.update([active, num])
+            assign_num(active, num)
             for others in mapping.values():
                 others.discard(active)
-        elif len(titles) == 0:
-            missing = n
-            del mapping[n]
 
 
-def solve_pt2():
+def assign_num(opcode_title, num):
+    opcodes[opcode_title].num = num
+    opcodes[num] = opcodes[opcode_title]
+    del mapping[num]
+
+
+def run_actual_sequence():
+    """ Part Two """
+
     regs = Registers([0, 0, 0, 0])
     for instruction in actuals:
         regs.operate(instruction)
@@ -123,8 +143,14 @@ def solve_pt2():
 
 
 ###############################
+
 if __name__ == '__main__':
     samples, actuals = get_instructions()
     opcodes = make_opcodes()
+    mapping = {}
+    pt1 = process_samples()
     map_opcodes()
-    print(solve_pt2())
+    pt2 = run_actual_sequence()
+    print("\n\n\n")
+    print(f"Part 1: {pt1}")
+    print(f"Part 2: {pt2}")
