@@ -4,6 +4,13 @@ from collections import deque
 COORD = re.compile(r"^[xy]=[\d]+")
 SPAN = re.compile(r"[\d]+\.\.[\d]+")
 
+def get_dim_loc_min_max(line):
+    dim = line[0]
+    loc = int(re.search(COORD, line)[0].split('=')[1])
+    mini, maxi = tuple(int(n) for n in re.search(SPAN, line)[0].split('..'))
+    return dim, loc, mini, maxi
+
+
 class Grid(dict):
     def __init__(self, lines):
         super().__init__()
@@ -33,7 +40,6 @@ class Grid(dict):
                 upp_x = upp_x - self.min_x
                 row[low_x:upp_x+1] = ['#'] * (upp_x+1 - low_x)
         print(''.join(row))
-
 
 
     def _update_coords(self, ys, low_x, upp_x):
@@ -78,11 +84,3 @@ class Grid(dict):
                 else:
                     i += 1
 
-
-
-
-def get_dim_loc_min_max(line):
-    dim = line[0]
-    loc = int(re.search(COORD, line)[0].split('=')[1])
-    mini, maxi = tuple(int(n) for n in re.search(SPAN, line)[0].split('..'))
-    return dim, loc, mini, maxi
