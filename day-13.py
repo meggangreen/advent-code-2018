@@ -180,7 +180,8 @@ def get_path_step(track_id, position):
 # uses complex numbers -- i havent read itertools module
 from itertools import cycle
 
-with open('day-13.txt') as file:
+with open('day-13-test.txt') as file:
+# with open('day-13.txt') as file:
     puzzle_input = file.read()
 
 grid = {}; carts = {}; directions = {'<': -1, '>': 1, '^': 1j, 'v': -1j}
@@ -200,14 +201,14 @@ while len(carts) > 1:
         position += direction  # update position
 
         if position in carts:  # handle collision
-            print('collision!', position, '(cart', position - direction)
+            print('collision!', position)  #, '-- cart was at ', position - direction)
             del carts[position]
             continue
 
         track = grid.get(position)  # update direction
         if track == '+':
             direction = direction * next(turn)
-        elif track is not None: #/ or \
+        elif track is not None:  # / or \
             direction *= 1j * (2*((track == '/') ^ (direction.real == 0))-1)
 
         carts[position] = direction, turn  # put cart back onto tracks

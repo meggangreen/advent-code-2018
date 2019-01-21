@@ -18,9 +18,9 @@ for line in lines:
         for x in range(b, c+1):
             clay[x + a * 1j] = True
 
-yl = [p.imag for p in clay]
-ymin, ymax = min(yl), max(yl)
-print("ymin", "ymax", ymin, ymax, "clay fields", len(clay))
+y_list = [p.imag for p in clay]
+ymin, ymax = min(y_list), max(y_list)
+# print("ymin", "ymax", ymin, ymax, "clay fields", len(clay))
 
 def fill(p, direction=1j):
     flowing.add(p)
@@ -34,7 +34,7 @@ def fill(p, direction=1j):
 
     l_filled = clay[left]  or left  not in flowing and fill(left , direction=-1)
     r_filled = clay[right] or right not in flowing and fill(right, direction=1)
-    #print("left_right_filled", left_filled, right_filled)
+    # print("left_right_filled", left_filled, right_filled)
 
     if direction == 1j and l_filled and r_filled:
         settled.add(p)
