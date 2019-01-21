@@ -187,16 +187,6 @@ def new_acres_is_the_place_to_be():
     return new_acres
 
 
-# def use_land(ACRES, minutes):
-    # ACRES = define_acres(puzzle_input)
-    # print(0, ACRES[7+0j])
-        # print(m+1, ACRES[7+0j])
-
-    # print("f", ACRES[7+0j])
-
-    return ACRES
-
-
 if __name__ == '__main__':
     puzzle_input = test_0
     ACRES = define_acres(puzzle_input)
@@ -218,8 +208,14 @@ if __name__ == '__main__':
 
     print("P1:", calc_resource_value())
 
+    ACRES = define_acres(puzzle_input)
+    for m in range(468):
+        ACRES = new_acres_is_the_place_to_be()
 
-""" Searched for some hints on reddit: """
+    print("P2:", calc_resource_value())
+
+
+    """ Searched for some hints on reddit:
 
     ACRES = define_acres(puzzle_input)
     results = set()
@@ -239,3 +235,6 @@ if __name__ == '__main__':
     # 444 + 24
     # >> 468
     # what was the stdout for 468? 177004
+
+    """
+
