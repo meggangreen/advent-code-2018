@@ -32,15 +32,12 @@ class Registers:
         return f"{self.__class__.__name__} {self.data!r} ip{self.ip!r}"
 
 
-    def operate(self, instruction, ip_val, opcode=None):
+    def operate(self, instruction, ip_val):
         self.data[self.ip] = ip_val
-        regs = self.data
-
         title, a, b, c = instruction.data
-        if not opcode:
-            opcode = opcodes[title]
 
-        self.data[c] = eval(opcode.operation)
+        regs = self.data
+        self.data[c] = eval(opcodes[title].operation)
 
 
 def get_instructions(puzzle):
@@ -84,21 +81,23 @@ def make_opcodes():
 
 
 def run_sequence(registers, instructions):
-    """ Part One """
+    """ Part One answer requires 6,383,176 iterations
+
+        Apparently I needed to disassemble the assembly language that the
+        instructions program was doing, then I would have (not) realized it was
+        summing prime factorals. Then I would have come up with the required
+        magic numbers -- for my input 893 and 10551293 -- to plug into a little
+        math equation. Instead I read a lot of reddit posts.
+
+    """
 
     used = set()
 
     i = registers.data[registers.ip]
     count = 1
-    while 0 <= i < len(instructions) and count <= 10000:
-        # part one answer requires 6,383,176 iterations
+    while 0 <= i < len(instructions) and count <= 100:
         registers.operate(instructions[i], i)
         i = registers.data[registers.ip] + 1
-        if i == 1:
-        # if i == registers.ip and registers.data[4] > 893:
-            print(registers, count)
-            # import pdb; pdb.set_trace()
-            break
         count += 1
 
     # print(f"Count: {count-1}")
@@ -112,9 +111,8 @@ if __name__ == '__main__':
     ip, instructions = get_instructions('day-19-test.txt')
     registers = Registers([0, 0, 0, 0, 0, 0], ip)
     test = run_sequence(registers, instructions)
-    # assert test.data==[6,5,6,0,0,9]
-    print("\n\n\n")
-    print("Test Successful")
+    assert test.data==[6,5,6,0,0,9]
+    print("\n\n\nTest Successful\n\n\n")
 
     ip, instructions = get_instructions('day-19.txt')
 
@@ -122,6 +120,6 @@ if __name__ == '__main__':
     pt1 = run_sequence(registers, instructions)
     print(f"P1: {pt1}")
 
-    registers = Registers([1, 0, 0, 0, 0, 0], ip)
-    pt2 = run_sequence(registers, instructions)
-    print(f"P2: {pt2}")
+    # registers = Registers([1, 0, 0, 0, 0, 0], ip)
+    # pt2 = run_sequence(registers, instructions)
+    # print(f"P2: {pt2}")
