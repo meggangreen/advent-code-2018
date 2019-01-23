@@ -49,7 +49,14 @@ class Route:
             pass
 
 
-""" Part One is just easier to do in regex """
+def remove_skip(route):
+    match = re.search(skip, route)
+    if match:
+        route = route[:match.span()[0]] + route[match.span()[1]:]
+
+    return route
+
+
 skip = re.compile(r'\([\w\|]+\|\)')
 opener = re.compile(r'\(')
 closer = re.compile(r'\)[\w]*$')
@@ -58,12 +65,14 @@ level = '()'
 with open('day-20.txt', 'r') as file:
     route = file.read().strip()[1:-1]
 
-def remove_skip(route):
-    match = re.search(skip, route)
-    if match:
-        route = route[:match.span()[0]] + routeroute[match.span()[1]:]
 
-    return route
+# print(len(route))  # 14323
+while True:
+    length = len(route)
+    route = remove_skip(route)
+    if length == len(route):
+        break
+# print(len(route))  # 11418
 
 
 def find_closer(route):
@@ -79,37 +88,22 @@ def find_opener(route):
 
 
 def explore(route):
-
-    # while True:
-    #     length = len(route)
-    #     route = remove_skip(route)
-    #     if length == len(route):
-    #         break
+    """ Oops! This doesn't attach the branch to its parent """
 
     doors = 0
 
+    # if there is a direct path, take it
     if route[-1] == '|':
         return doors
 
     start = find_opener(route)
     if start:
         end = find_closer(route)
-        route = route[start:end]
-        doors += explore(route)
+        to_explore = route[start:end]
+        route = route[:start-1] + route[end+1:]
+        doors += explore(to_explore)
 
-    doors
-
-
-    r = 0
-    while r < len(route):
-        if route[r] in 'NESW':
-            doors += 1
-        elif route[r] == '(':
-        elif route[r] == ')':
-            # should not arrive?
-            break
-        # elif route[r] == '|' and route[r+1] == ')':
-        #     doors = 0
-        #     break
+    doors += max([len(r) for r in route.split('|')])
 
     return doors
+
