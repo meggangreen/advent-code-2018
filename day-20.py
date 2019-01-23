@@ -12,7 +12,7 @@ class Section(str):
 
     def __init__(self, doors): #, start, children=None):
         super().__init__()
-        self.start = float('inf') * -1
+        # self.start = float('inf') * -1
         self.len = self.__len__()
         self.children = None
 
@@ -25,7 +25,7 @@ class Section(str):
         if not self.children:
             self.children = []
         self.children.extend(children)
-        self.children.sort(key=lambda child: child.start)
+        # self.children.sort(key=lambda child: child.start)
 
 
 class Route:
@@ -35,75 +35,130 @@ class Route:
         self.root = root
 
 
-    def find_most_doors_no_repeat(self):
+    def find_most_doors_no_repeat(self, to_visit=None):
         """ DFS shortest path to farthest end """
 
-        section = self.root
-        path = [section]
-        to_visit = deque(section.children)
+        path = deque()
+        doors = 0
 
-        # for section in to_visit:
+        if not to_visit:
+            to_visit = [self.root]
+
+        while to_visit:
+            section = to_visit.pop()
+
+            if section.children:
+                to_visit.extend(section.children)
+                route = Route(section)
+                doors += route.find_most_doors_no_repeat(to_visit)
+
+            else:
+                import pdb; pdb.set_trace()
+                path.appendleft(section)
+                doors += section.len
+                return doors
+
+
+
 
 
         def walk_through_doors(section):
             pass
 
 
-def remove_skip(route):
-    match = re.search(skip, route)
+def remove_skip(puzzle_in):
+    match = re.search(skip, puzzle_in)
     if match:
-        route = route[:match.span()[0]] + route[match.span()[1]:]
+        puzzle_in = puzzle_in[:match.span()[0]] + puzzle_in[match.span()[1]:]
 
-    return route
-
-
-skip = re.compile(r'\([\w\|]+\|\)')
-opener = re.compile(r'\(')
-closer = re.compile(r'\)[\w]*$')
-level = '()'
-
-with open('day-20.txt', 'r') as file:
-    route = file.read().strip()[1:-1]
+    return puzzle_in
 
 
-# print(len(route))  # 14323
-while True:
-    length = len(route)
-    route = remove_skip(route)
-    if length == len(route):
-        break
-# print(len(route))  # 11418
-
-
-def find_closer(route):
-    match = re.search(closer, route)
+def find_closer(puzzle_in):
+    match = re.search(closer, puzzle_in)
     if match:
         return match.span()[0]
 
 
-def find_opener(route):
-    match = re.search(opener, route)
+def find_opener(puzzle_in):
+    match = re.search(opener, puzzle_in)
     if match:
         return match.span()[0] + 1
 
 
-def explore(route):
-    """ Oops! This doesn't attach the branch to its parent """
+def explore(puzzle_in):
+    sections = []
 
-    doors = 0
+    # if there is a path to skip, skip it
+    if puzzle_in[-1] == '|':
+        return
 
-    # if there is a direct path, take it
-    if route[-1] == '|':
-        return doors
+    start = find_opener(puzzle_in)
+    if not start:
+        sections.extend([Section(r) for r in puzzle_in.split('|')])
 
-    start = find_opener(route)
-    if start:
-        end = find_closer(route)
-        to_explore = route[start:end]
-        route = route[:start-1] + route[end+1:]
-        doors += explore(to_explore)
+    else:
+        import pdb; pdb.set_trace()
+        end = find_closer(puzzle_in)
+        to_explore = puzzle_in[start:end]
+        sections.extend([Section(r) for r in puzzle_in[:start-1].split('|')])
+        parent = sections.pop()
+        if parent == 'EEN':
+            print("\n\n\nPARENT: EEN\n\n\n")
+            import pdb; pdb.set_trace()
+        parent.adopt(explore(to_explore))
+        sections.append(parent)
 
-    doors += max([len(r) for r in route.split('|')])
+    return sections
 
-    return doors
 
+def balance_parens(puzz_in):
+
+    sections = []
+    start = None
+    end = -1
+
+    # if there is a path to skip, skip it
+    if puzz_in[-1] == '|':
+        return
+
+    for i, p in enumerate(puzz_in):
+        if p == '(':
+            import pdb; pdb.set_trace()
+            start = end + 1  # 0 if not end else end + 1
+            end = i
+            sections.append(puzz_in[start:end])
+        if p == ')':
+            import pdb; pdb.set_trace()
+            start = end + 1
+            end = i
+            children = [Section(char) for char in puzz_in[start:end].split('|')]
+            parent_level = [Section(char) for char in sections.pop().split('|')]
+            parent_level[-1].adopt(children)
+
+
+
+###################
+
+if __name__ == '__main__':
+    skip = re.compile(r'\([\w\|]+\|\)')
+    opener = re.compile(r'\(')
+    closer = re.compile(r'\)')  # re.compile(r'\)[\w]*$')
+    level = '()'
+
+    with open('day-20.txt', 'r') as file:
+        puzzle_input = file.read().strip()[1:-1]
+
+    # get rid of optional paths early
+    # print(len(puzzle_input))  # 14323
+    while True:
+        puzzle_length = len(puzzle_input)
+        puzzle_input = remove_skip(puzzle_input)
+        if puzzle_length == len(puzzle_input):
+            break
+    with open('day-20-clean.txt', 'w') as file:
+        file.write(puzzle_input)
+    # print(len(puzzle_input))  # 11418
+
+    # root = explore(puzzle_input)[0]
+    # route = Route(root)
