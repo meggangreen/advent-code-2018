@@ -91,10 +91,47 @@ def graph_cave_regions(upp_bound):
                           terrain=region.terrain)
 
 
+def graph_cave_regions_paths(upp_bound):
+    """ I struggled with what the edges should be, how best to incorporate the tools. """
+
+    edges = nx.Graph()
+
+    for y in range(int(upp_bound.imag+1)):
+        for x in range(int(upp_bound.real+1)):
+            coord = x + y * 1j
+            region = Region(coord)
+            CAVE.add_node(coord,
+                          coord=region.coord,
+                          title=region.title,
+                          geologi=region.geologi,
+                          erosion=region.erosion,
+                          terrain=region.terrain)
+            tools = TOOLS[region.terrain]
+            edges.add_edge((coord, tools[0]), (coord, tools[1]), weight=7)
+            for direction in [-1, -1j]:  # north and west only -- looking ahead to south and east double-adds edges
+                node = CAVE.nodes.get(coord + direction)
+                if node:
+                    new_tools = set(TOOLS[node['terrain']])
+                    for tool in set(tools).intersection(new_tools):
+                        edges.add_edge((coord, tool), (coord+direction, tool), weight=1)
+
+    return nx.dijkstra_path_length(edges, (MOUTH, torch), (TARGET, torch))
+
+
+
+
+
+
 ################################################################################
 
 if __name__ == '__main__':
-    TERRAINS = {0: ("rocky", "."), 1: ("wet", "="), 2: ("narrow", "|")}
+
+    rocky, wet, narrow = 0, 1, 2
+    torch, gear, neither = 0, 1, 2
+    TOOLS = {rocky: (torch, gear), wet: (gear, neither), narrow: (torch, neither)}
+    TERRAINS = {torch: (rocky, narrow), gear: (rocky, wet), neither: (wet, narrow)}
+
+    # TERRAINS = {0: ("rocky", "."), 1: ("wet", "="), 2: ("narrow", "|")}
     SPECIALS = ["mouth", "target"]
 
     MOUTH = 0+0j
@@ -116,7 +153,10 @@ if __name__ == '__main__':
     pt1 = sum([CAVE.nodes[r]['terrain'] for r in CAVE.nodes])  # 7299
 
 
-    pt2 = len(nx.shortest_path(CAVE, source=MOUTH, target=TARGET))  # 1008
+    CAVE = nx.Graph()
+    pt2 = graph_cave_regions_paths(TARGET + 100+100j)  # expand cave knowledge in case of roundabout paths
+
+    # pt2 = len(nx.shortest_path(CAVE, source=MOUTH, target=TARGET))  # 1008
 
     print(f"Part 1: {pt1}")
     print(f"Part 2: {pt2}")
