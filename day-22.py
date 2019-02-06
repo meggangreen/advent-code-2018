@@ -91,35 +91,20 @@ def graph_cave_regions(upp_bound):
                           terrain=region.terrain)
 
 
-def graph_cave_regions_paths(upp_bound):
+def graph_cave_paths():
     """ I struggled with what the edges should be, how best to incorporate the tools. """
 
-    edges = nx.Graph()
+    for coord in CAVE.nodes:
+        region = CAVE.nodes[coord]
+        tools = TOOLS[region['terrain']]
+        EDGES.add_edge((coord, tools[0]), (coord, tools[1]), weight=7)
 
-    for y in range(int(upp_bound.imag+1)):
-        for x in range(int(upp_bound.real+1)):
-            coord = x + y * 1j
-            region = Region(coord)
-            CAVE.add_node(coord,
-                          coord=region.coord,
-                          title=region.title,
-                          geologi=region.geologi,
-                          erosion=region.erosion,
-                          terrain=region.terrain)
-            tools = TOOLS[region.terrain]
-            edges.add_edge((coord, tools[0]), (coord, tools[1]), weight=7)
-            for direction in [-1, -1j]:  # north and west only -- looking ahead to south and east double-adds edges
-                node = CAVE.nodes.get(coord + direction)
-                if node:
-                    new_tools = set(TOOLS[node['terrain']])
-                    for tool in set(tools).intersection(new_tools):
-                        edges.add_edge((coord, tool), (coord+direction, tool), weight=1)
-
-    return nx.dijkstra_path_length(edges, (MOUTH, torch), (TARGET, torch))
-
-
-
-
+        for adj in [-1, -1j]:  # north and west only -- looking ahead to south and east double-adds edges
+            next_region = CAVE.nodes.get(coord + adj)
+            if next_region:
+                next_tools = set(TOOLS[next_region['terrain']])
+                for tool in set(tools).intersection(next_tools):
+                    EDGES.add_edge((coord, tool), (coord+adj, tool), weight=1)
 
 
 ################################################################################
@@ -127,11 +112,9 @@ def graph_cave_regions_paths(upp_bound):
 if __name__ == '__main__':
 
     rocky, wet, narrow = 0, 1, 2
-    torch, gear, neither = 0, 1, 2
+    torch, gear, neither = "t", "c", "n"
     TOOLS = {rocky: (torch, gear), wet: (gear, neither), narrow: (torch, neither)}
-    TERRAINS = {torch: (rocky, narrow), gear: (rocky, wet), neither: (wet, narrow)}
 
-    # TERRAINS = {0: ("rocky", "."), 1: ("wet", "="), 2: ("narrow", "|")}
     SPECIALS = ["mouth", "target"]
 
     MOUTH = 0+0j
@@ -154,9 +137,16 @@ if __name__ == '__main__':
 
 
     CAVE = nx.Graph()
-    pt2 = graph_cave_regions_paths(TARGET + 100+100j)  # expand cave knowledge in case of roundabout paths
+    EDGES = nx.Graph()
+    graph_cave_regions(TARGET + 100+100j)  # expand cave knowledge in case of roundabout paths
+    graph_cave_paths()
 
-    # pt2 = len(nx.shortest_path(CAVE, source=MOUTH, target=TARGET))  # 1008
+    # I generally know that Dijkstra's algorithm finds the shortest path from
+    # the current node to an adjacent node (thanks amsowie!). So the long way to
+    # implement this would be to find all the paths, and pick the shortest ... ?
+    # Or is it like house robbing where picking the shortest at each chance _is_
+    # the shortest?
+    pt2 = nx.dijkstra_path_length(EDGES, (MOUTH, torch), (TARGET, torch))  # 1008
 
     print(f"Part 1: {pt1}")
     print(f"Part 2: {pt2}")
