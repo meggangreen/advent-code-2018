@@ -43,12 +43,12 @@ class Region:
         self.erosion = None
         self.type = None
 
-        self.__set_title(target)
+        self.__set_title()
         self.__set_geologi()
         self.__set_erosion()
         self.__set_type()
 
-    def __set_title(self, target):
+    def __set_title(self):
         if self.coord == TARGET:
             self.title = "target"
         if self.coord == 0+0j:
@@ -69,12 +69,12 @@ class Region:
         self.erosion = (self.geologi + DEPTH) % 20183
 
     def __set_type(self):
-        self.type = TYPES[self.erosion]
+        self.type = self.erosion % 3
 
 
-def make_regions(mouth=0+0j, target=TARGET):
-    for x in range(target.real+1):
-        for y in range(target.imag+1):
+def make_regions(target):
+    for x in range(int(target.real+1)):
+        for y in range(int(target.imag+1)):
             coord = x + y * 1j
             REGIONS[coord] = Region(coord)
 
@@ -87,8 +87,8 @@ if __name__ == '__main__':
     REGIONS = {}
     DEPTH = 510
     TARGET = 10+10j
-    make_regions()
-    assert sum([r.erosion for r in REGIONS]) == 114
+    make_regions(TARGET)
+    assert sum([r.type for _, r in REGIONS.items()]) == 114
 
 
     # puzzle
@@ -96,10 +96,10 @@ if __name__ == '__main__':
     DEPTH = 11109
     TARGET = 9+731j  # risk grid has 6579 regions
 
-    make_regions()
+    make_regions(TARGET)
 
-    pt1 = sum([r.erosion for r in REGIONS])
+    pt1 = sum([r.type for _, r in REGIONS.items()])
     pt2 = None
 
     print(f"Part 1: {pt1}")
-    print(f"Part 1: {pt1}")
+    print(f"Part 2: {pt2}")
