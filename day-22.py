@@ -35,18 +35,20 @@
 
 """
 
+import networkx as nx
+
 class Region:
     def __init__(self, coord):
         self.coord = coord
         self.title = None
         self.geologi = None
         self.erosion = None
-        self.type = None
+        self.terrain = None
 
         self.__set_title()
         self.__set_geologi()
         self.__set_erosion()
-        self.__set_type()
+        self.__set_terrain()
 
     def __set_title(self):
         if self.coord == TARGET:
@@ -62,21 +64,27 @@ class Region:
         elif self.coord.real == 0:
             self.geologi = self.coord.imag * 48271
         else:
-            self.geologi = (REGIONS[self.coord-1].erosion *
-                            REGIONS[self.coord-1j].erosion)
+            self.geologi = (CAVE.nodes[self.coord-1]['erosion'] *
+                            CAVE.nodes[self.coord-1j]['erosion'])
 
     def __set_erosion(self):
         self.erosion = (self.geologi + DEPTH) % 20183
 
-    def __set_type(self):
-        self.type = self.erosion % 3
+    def __set_terrain(self):
+        self.terrain = self.erosion % 3
 
 
-def make_regions(target):
-    for x in range(int(target.real+1)):
-        for y in range(int(target.imag+1)):
+def graph_cave(u_bound):
+    for x in range(int(u_bound.real+1)):
+        for y in range(int(u_bound.imag+1)):
             coord = x + y * 1j
-            REGIONS[coord] = Region(coord)
+            region = Region(coord)
+            CAVE.add_node(coord,
+                          coord=region.coord,
+                          title=region.title,
+                          geologi=region.geologi,
+                          erosion=region.erosion,
+                          terrain=region.terrain)
 
 
 if __name__ == '__main__':
@@ -84,21 +92,20 @@ if __name__ == '__main__':
     SPECIALS = ["mouth", "target"]
 
     # testing
-    REGIONS = {}
+    CAVE = nx.Graph()
     DEPTH = 510
     TARGET = 10+10j
-    make_regions(TARGET)
-    assert sum([r.type for _, r in REGIONS.items()]) == 114
+    graph_cave(TARGET)
+    assert sum([CAVE.nodes[r]['terrain'] for r in CAVE.nodes()]) == 114
 
 
     # puzzle
-    REGIONS = {}
+    CAVE = nx.Graph()
     DEPTH = 11109
     TARGET = 9+731j  # risk grid has 6579 regions
+    graph_cave(TARGET)
 
-    make_regions(TARGET)
-
-    pt1 = sum([r.type for _, r in REGIONS.items()])
+    pt1 = sum([CAVE.nodes[r]['terrain'] for r in CAVE.nodes()])  # 7299
     pt2 = None
 
     print(f"Part 1: {pt1}")
