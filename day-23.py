@@ -50,6 +50,41 @@ def count_nanos_in_r_leader_range(nanofam):
     return count
 
 
+def get_nanos_in_range_of_coordinate(nanofam, coord):
+    me = Nano(coord, 0)
+    matches = NanoFam([])
+
+    for nano in nanofam:
+        if nano.is_in_my_range(me):
+            matches.append(nano)
+
+    return matches
+
+
+def get_most_nanos(nanofam):
+
+    # get coordinate that has most intersections with nano ranges
+
+
+def get_bounds(nanofam):
+    # this doesn't get grid bounds, actually
+    # would need to add/subtract radius to values
+    # but i'm abandoning it, so it's fine
+
+    x_upp = max([nano.x for nano in nanofam])  # + 245626380
+    x_low = min([nano.x for nano in nanofam])  # - 107851315
+    y_upp = max([nano.y for nano in nanofam])  # + 220235439
+    y_low = min([nano.y for nano in nanofam])  # -  60555491
+    z_upp = max([nano.z for nano in nanofam])  # + 116486328
+    z_low = min([nano.z for nano in nanofam])  # - 143235253
+
+    # my grid has 25778231880569997165703555 coordinates
+
+    return x_upp, x_low, y_upp, y_low, z_upp, z_low
+
+
+
+
 def make_nano_fam(filename):
     xyz_patt = re.compile(r'(?<=pos=<)[\-\d]+,[\-\d]+,[\-\d]+(?=>)')
     r_patt = re.compile(r'(?<=r=)[\d]+')
