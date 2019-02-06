@@ -39,7 +39,6 @@
 """
 
 import networkx as nx
-from copy import deepcopy
 
 class Region:
     def __init__(self, coord):
