@@ -6,7 +6,7 @@
     TYPES = {0: ("rocky", "."), 1: ("wet", "="), 2: ("narrow", "|")}
     SPECIALS = ["mouth", "target"]
 
-    regions = {coord, Region}
+    regions = {coord: Region}
 
     region.title None or a special
     region.type TYPES[r.erosion]
