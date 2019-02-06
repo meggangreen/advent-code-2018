@@ -21,6 +21,17 @@ class Nano:
                          abs(self.z - nano.z)])
         return self.r >= manhattan
 
+    def get_bounds(self):
+
+        x_upp = self.x + self.r
+        x_low = self.x - self.r
+        y_upp = self.y + self.r
+        y_low = self.y - self.r
+        z_upp = self.z + self.r
+        z_low = self.z - self.r
+
+        return [x_upp, x_low, y_upp, y_low, z_upp, z_low]
+
 
 class NanoFam(list):
     def __init__(self, nanos):
@@ -50,37 +61,54 @@ def count_nanos_in_r_leader_range(nanofam):
     return count
 
 
-def get_nanos_in_range_of_coordinate(nanofam, coord):
-    me = Nano(coord, 0)
+def get_nanos_in_range(origin, nanofam):
     matches = NanoFam([])
 
     for nano in nanofam:
-        if nano.is_in_my_range(me):
+        if origin.is_in_my_range(nano):
             matches.append(nano)
+
+    matches.sort(key=lambda n: n.r, reverse=True)
 
     return matches
 
 
-def get_most_nanos(nanofam):
+def get_intersection_coords(nanofam):
 
     # get coordinate that has most intersections with nano ranges
+    # my r_leader connects with most nanos -- 341
+    # what are the coordinates that exist within all 341 nano ranges?
+    # what is the nano within leader's range that has the smallest range?
+    # 0,0,0 to outer bounds of smallest-r nano is 0,5009904,0 -- 5009904 is too low says AOC
+    # result included all 341 nanos and the distance was 16556366,37610040,6956865 -- 61130571 is too low
+
+    the341 = get_nanos_in_range(nanofam.r_leader, nanofam)
+
+    winner = Nano(0, 0, 0, float('inf'))
+    w_x_upp, w_x_low, w_y_upp, w_y_low, w_z_upp, w_z_low = winner.get_bounds()
+
+    count = 0
+    for nano in the341:
+        if winner.is_in_my_range(nano):
+            count += 1
+            x_upp, x_low, y_upp, y_low, z_upp, z_low = nano.get_bounds()
+            w_x_upp = min(w_x_upp, x_upp)
+            w_y_upp = min(w_y_upp, y_upp)
+            w_z_upp = min(w_z_upp, z_upp)
+            w_x_low = max(w_x_low, x_low)
+            w_y_low = max(w_y_low, y_low)
+            w_z_low = max(w_z_low, z_low)
+
+    print(count)
+    return [w_x_upp, w_x_low, w_y_upp, w_y_low, w_z_upp, w_z_low]
 
 
-def get_bounds(nanofam):
-    # this doesn't get grid bounds, actually
-    # would need to add/subtract radius to values
-    # but i'm abandoning it, so it's fine
 
-    x_upp = max([nano.x for nano in nanofam])  # + 245626380
-    x_low = min([nano.x for nano in nanofam])  # - 107851315
-    y_upp = max([nano.y for nano in nanofam])  # + 220235439
-    y_low = min([nano.y for nano in nanofam])  # -  60555491
-    z_upp = max([nano.z for nano in nanofam])  # + 116486328
-    z_low = min([nano.z for nano in nanofam])  # - 143235253
 
-    # my grid has 25778231880569997165703555 coordinates
 
-    return x_upp, x_low, y_upp, y_low, z_upp, z_low
+
+
+
 
 
 
@@ -107,7 +135,7 @@ def make_nano_fam(filename):
 
 if __name__ == '__main__':
     nanofam = make_nano_fam('day-23.txt')
-    pt1 = count_nanos_in_r_leader_range(nanofam)
+    pt1 = count_nanos_in_r_leader_range(nanofam)  # 341
 
     pt2 = None
 
