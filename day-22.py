@@ -2,6 +2,9 @@
 
     Oh good, another grid. I can do this one, I know it.
 
+    Part 2 help from the best redditor ever korylprince:
+    https://www.reddit.com/r/adventofcode/comments/a8i1cy/2018_day_22_solutions/ecazvbe
+
     puzzle input:
     DEPTH = 11109
     TARGET = 9,731 ==> (9+731j) :: risk grid has 6579 regions
@@ -36,6 +39,7 @@
 """
 
 import networkx as nx
+from copy import deepcopy
 
 class Region:
     def __init__(self, coord):
@@ -74,9 +78,9 @@ class Region:
         self.terrain = self.erosion % 3
 
 
-def graph_cave(u_bound):
-    for x in range(int(u_bound.real+1)):
-        for y in range(int(u_bound.imag+1)):
+def graph_cave_regions(upp_bound):
+    for y in range(int(upp_bound.imag+1)):
+        for x in range(int(upp_bound.real+1)):
             coord = x + y * 1j
             region = Region(coord)
             CAVE.add_node(coord,
@@ -87,26 +91,32 @@ def graph_cave(u_bound):
                           terrain=region.terrain)
 
 
+################################################################################
+
 if __name__ == '__main__':
-    TYPES = {0: ("rocky", "."), 1: ("wet", "="), 2: ("narrow", "|")}
+    TERRAINS = {0: ("rocky", "."), 1: ("wet", "="), 2: ("narrow", "|")}
     SPECIALS = ["mouth", "target"]
+
+    MOUTH = 0+0j
 
     # testing
     CAVE = nx.Graph()
     DEPTH = 510
     TARGET = 10+10j
-    graph_cave(TARGET)
-    assert sum([CAVE.nodes[r]['terrain'] for r in CAVE.nodes()]) == 114
+    graph_cave_regions(TARGET)
+    assert sum([CAVE.nodes[r]['terrain'] for r in CAVE.nodes]) == 114
 
 
     # puzzle
     CAVE = nx.Graph()
     DEPTH = 11109
     TARGET = 9+731j  # risk grid has 6579 regions
-    graph_cave(TARGET)
+    graph_cave_regions(TARGET)
 
-    pt1 = sum([CAVE.nodes[r]['terrain'] for r in CAVE.nodes()])  # 7299
-    pt2 = None
+    pt1 = sum([CAVE.nodes[r]['terrain'] for r in CAVE.nodes])  # 7299
+
+
+    pt2 = len(nx.shortest_path(CAVE, source=MOUTH, target=TARGET))  # 1008
 
     print(f"Part 1: {pt1}")
     print(f"Part 2: {pt2}")
