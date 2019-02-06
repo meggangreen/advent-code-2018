@@ -7,6 +7,7 @@
 """
 
 import re
+from queue import PriorityQueue
 
 class Nano:
     def __init__(self, x, y, z, r):
@@ -98,19 +99,10 @@ def get_intersection_coords(nanofam):
             w_x_low = max(w_x_low, x_low)
             w_y_low = max(w_y_low, y_low)
             w_z_low = max(w_z_low, z_low)
+            winner = nano
 
     print(count)
     return [w_x_upp, w_x_low, w_y_upp, w_y_low, w_z_upp, w_z_low]
-
-
-
-
-
-
-
-
-
-
 
 
 def make_nano_fam(filename):
@@ -131,13 +123,55 @@ def make_nano_fam(filename):
     return nanofam
 
 
+def part_two_copied():
+    """ thanks to EriiKKo https://www.reddit.com/r/adventofcode/comments/a8s17l/2018_day_23_solutions/ecdqzdg """
+
+    # The lowest valued entries are retrieved first (the lowest valued entry is
+    # the one returned by sorted(list(entries))[0]). A typical pattern for
+    # entries is a tuple in the form: (priority, data).
+
+    # this works because each smaller bot is completely nested in the larger,
+    # which I did find on my own in looking at the341
+
+    with open('day-23.txt') as file:
+        lines = file.readlines()
+
+    bots = [map(int, re.findall(r"-?[\d]+", line)) for line in lines]
+
+    segments = PriorityQueue()
+
+    # The queue is holding entries for the start and end of each "line segment"
+    # as measured by manhattan distance to 0,0,0. At the start of the segment,
+    # the '1' (last element in the tuple) adds to the total of overlapping
+    # segments. The '-1' that marks the segment's end is used to decrease the counter.
+    for x, y, z, r in bots:
+        d = abs(x) + abs(y) + abs(z)    # manhattan distance to 0,0,0
+        segments.put((max(0, d - r), 1))       # priority = 0 or d - r
+        segments.put((d + r + 1, -1))          # priority = d + r + 1
+
+    count = 0
+    maxCount = 0
+    result = 0
+
+    # calculates the maximum number of overlapping segments,
+    # and the point where the maximum is hit, which is the answer
+    while not segments.empty():
+        dist, e = segments.get()
+        count += e
+        if count > maxCount:
+            result = dist
+            maxCount = count
+
+    return result
+
+
 ################################################################################
 
 if __name__ == '__main__':
     nanofam = make_nano_fam('day-23.txt')
     pt1 = count_nanos_in_r_leader_range(nanofam)  # 341
 
-    pt2 = None
+    pt2 = part_two_copied()  # 105191907
 
     print(f"Part 1: {pt1}")
     print(f"Part 2: {pt2}")
