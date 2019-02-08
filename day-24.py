@@ -263,6 +263,49 @@ def parse_input(filepath):
     return armies
 
 
+def apply_boost(army, boost):
+    for group in army.groups:
+        group.damage += boost
+        group._set_efficacy()
+
+    return army
+
+
+def find_boost_bisection():
+    """ found out bisection doesn't work for all inputs; certainly several
+        copied solutions didn't work for me.
+
+    """
+
+    armies = parse_input('day-24.txt')
+    army = armies["Immune System"]
+
+    boost_low = 0
+    boost_upp = 0
+    boost = 0
+
+    winner = "Infection"
+    while "Infection" in winner:
+        if boost == 0:
+            boost_upp = 100
+            boost = boost_upp
+        else:
+            boost_low = boost_upp
+            boost_upp *= 10
+            boost = boost_upp
+
+        print(boost)
+
+        army_b = apply_boost(army, boost)
+        armies["Immune System"] = army_b
+        winner = Battle(armies).fight()
+
+    return boost_low, boost_upp
+
+
+
+
+
 ################################################################################
 
 if __name__ == '__main__':
