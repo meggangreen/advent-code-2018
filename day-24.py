@@ -218,8 +218,6 @@ class Battle:
 
 
 def parse_input(filepath):
-    # 2194 units each with 25164 hit points (weak to bludgeoning; immune to cold)
-    # with an attack that does 18 bludgeoning damage at initiative 14
     p_army = re.compile(r'(?<=^Army: )[\w\s]+(?=\n)')
     p_units = re.compile(r'^[\d]+(?= units)')
     p_health = re.compile(r'[\d]+(?= hit points)')
